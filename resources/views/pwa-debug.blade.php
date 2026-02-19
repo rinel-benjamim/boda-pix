@@ -46,25 +46,136 @@
 <body>
     <h1>🔍 PWA Diagnóstico - BodaPix</h1>
     
+    <div style="background: #1E293B; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h2>📥 Instalar BodaPix</h2>
+        <p id="install-status">Verificando disponibilidade...</p>
+        <button id="install-button" onclick="installPWA()" style="display: none;">📥 Instalar Agora</button>
+        <div id="install-instructions" style="display: none; margin-top: 15px; padding: 15px; background: #0F172A; border-radius: 6px;">
+            <!-- Instruções serão inseridas aqui -->
+        </div>
+    </div>
+    
     <div id="results"></div>
     
     <button onclick="runTests()">Executar Testes</button>
-    <button onclick="installPWA()">Instalar PWA</button>
     <button onclick="location.href='/'">Voltar ao App</button>
 
     <script>
         let deferredPrompt;
 
+        // Detectar se já está instalado
+        function isInstalled() {
+            return window.matchMedia('(display-mode: standalone)').matches ||
+                   window.navigator.standalone === true;
+        }
+
+        // Detectar plataforma
+        function getPlatform() {
+            const ua = navigator.userAgent.toLowerCase();
+            if (/iphone|ipad|ipod/.test(ua)) return 'ios';
+            if (/android/.test(ua)) return 'android';
+            return 'desktop';
+        }
+
+        // Mostrar instruções específicas da plataforma
+        function showPlatformInstructions() {
+            const platform = getPlatform();
+            const instructionsDiv = document.getElementById('install-instructions');
+            const statusP = document.getElementById('install-status');
+            
+            if (isInstalled()) {
+                statusP.innerHTML = '✅ <strong>BodaPix já está instalado!</strong>';
+                return;
+            }
+
+            let instructions = '';
+            
+            if (platform === 'ios') {
+                instructions = `
+                    <h3>📱 Instalar no iOS (Safari)</h3>
+                    <ol style="text-align: left; line-height: 1.8;">
+                        <li>Toque no botão <strong>Compartilhar</strong> (□↑) na barra inferior</li>
+                        <li>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></li>
+                        <li>Toque em <strong>"Adicionar"</strong></li>
+                    </ol>
+                    <p style="margin-top: 10px; color: #f59e0b;">⚠️ Nota: Use o Safari, não Chrome no iOS</p>
+                `;
+                statusP.innerHTML = '📱 Siga as instruções abaixo para instalar no iOS:';
+            } else if (platform === 'android') {
+                instructions = `
+                    <h3>📱 Instalar no Android</h3>
+                    <ol style="text-align: left; line-height: 1.8;">
+                        <li>Toque no menu (⋮) no canto superior direito</li>
+                        <li>Selecione <strong>"Adicionar à tela inicial"</strong> ou <strong>"Instalar app"</strong></li>
+                        <li>Toque em <strong>"Instalar"</strong></li>
+                    </ol>
+                    <p style="margin-top: 10px; color: #10b981;">💡 Ou aguarde o banner de instalação aparecer automaticamente</p>
+                `;
+                statusP.innerHTML = '📱 Siga as instruções abaixo para instalar no Android:';
+            } else {
+                instructions = `
+                    <h3>💻 Instalar no Desktop</h3>
+                    <ol style="text-align: left; line-height: 1.8;">
+                        <li>Clique no ícone <strong>➕</strong> ou <strong>🖥️</strong> na barra de endereço</li>
+                        <li>Ou vá em Menu → <strong>"Instalar BodaPix"</strong></li>
+                        <li>Clique em <strong>"Instalar"</strong></li>
+                    </ol>
+                    <p style="margin-top: 10px; color: #10b981;">💡 Também pode usar o botão abaixo se disponível</p>
+                `;
+                statusP.innerHTML = '💻 Siga as instruções abaixo para instalar no Desktop:';
+            }
+            
+            instructionsDiv.innerHTML = instructions;
+            instructionsDiv.style.display = 'block';
+        }
+
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            addResult('✅ Evento beforeinstallprompt detectado - App pode ser instalado!', 'success');
+            
+            const installButton = document.getElementById('install-button');
+            const statusP = document.getElementById('install-status');
+            const instructionsDiv = document.getElementById('install-instructions');
+            
+            installButton.style.display = 'inline-block';
+            statusP.innerHTML = '✅ <strong>BodaPix está pronto para instalar!</strong>';
+            instructionsDiv.style.display = 'none';
         });
 
         window.addEventListener('appinstalled', () => {
-            addResult('✅ App instalado com sucesso!', 'success');
-            deferredPrompt = null;
+            const statusP = document.getElementById('install-status');
+            const installButton = document.getElementById('install-button');
+            const instructionsDiv = document.getElementById('install-instructions');
+            
+            statusP.innerHTML = '✅ <strong>BodaPix instalado com sucesso!</strong>';
+            installButton.style.display = 'none';
+            instructionsDiv.style.display = 'none';
+            
+            setTimeout(() => {
+                location.href = '/';
+            }, 2000);
         });
+
+        async function installPWA() {
+            if (!deferredPrompt) {
+                showPlatformInstructions();
+                return;
+            }
+
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            const statusP = document.getElementById('install-status');
+            
+            if (outcome === 'accepted') {
+                statusP.innerHTML = '✅ <strong>Instalando BodaPix...</strong>';
+            } else {
+                statusP.innerHTML = '❌ Instalação cancelada. Tente novamente quando quiser!';
+            }
+            
+            deferredPrompt = null;
+            document.getElementById('install-button').style.display = 'none';
+        }
 
         function addResult(message, type = 'status') {
             const div = document.createElement('div');
@@ -157,27 +268,13 @@ Online: ${navigator.onLine}
 Cookies Enabled: ${navigator.cookieEnabled}</pre>`);
         }
 
-        async function installPWA() {
-            if (!deferredPrompt) {
-                addResult('⚠️ Prompt de instalação não disponível. Possíveis razões:<br>- App já está instalado<br>- Navegador não suporta<br>- Critérios PWA não atendidos', 'warning');
-                return;
-            }
-
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            
-            if (outcome === 'accepted') {
-                addResult('✅ Usuário aceitou a instalação!', 'success');
-            } else {
-                addResult('❌ Usuário recusou a instalação', 'error');
-            }
-            
-            deferredPrompt = null;
-        }
-
-        // Auto-run tests on load
+        // Auto-run on load
         window.addEventListener('load', () => {
-            setTimeout(runTests, 500);
+            if (isInstalled()) {
+                document.getElementById('install-status').innerHTML = '✅ <strong>BodaPix já está instalado!</strong>';
+            } else if (!deferredPrompt) {
+                setTimeout(showPlatformInstructions, 1000);
+            }
         });
     </script>
 </body>

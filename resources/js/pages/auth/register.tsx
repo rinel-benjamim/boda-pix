@@ -9,11 +9,14 @@ import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 import { InstallPWAButton } from '@/components/install-pwa-button';
+import { InstallPWABanner } from '@/components/install-pwa-banner';
 
 export default function Register() {
 
     return (
-        <AuthLayout
+        <>
+            <InstallPWABanner />
+            <AuthLayout
             title="Create an account"
             description="Enter your details below to create your account"
         >
@@ -114,5 +117,6 @@ export default function Register() {
                 )}
             </Form>
         </AuthLayout>
+        </>
     );
 }

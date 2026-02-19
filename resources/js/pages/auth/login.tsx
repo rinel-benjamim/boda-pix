@@ -11,6 +11,7 @@ import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import { InstallPWAButton } from '@/components/install-pwa-button';
+import { InstallPWABanner } from '@/components/install-pwa-banner';
 
 type Props = {
     status?: string;
@@ -25,7 +26,9 @@ export default function Login({
 }: Props) {
 
     return (
-        <AuthLayout
+        <>
+            <InstallPWABanner />
+            <AuthLayout
             title="Log in to your account"
             description="Enter your email and password below to log in"
         >
@@ -120,5 +123,6 @@ export default function Login({
                 </div>
             )}
         </AuthLayout>
+        </>
     );
 }
