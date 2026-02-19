@@ -74,6 +74,6 @@ class EventController extends Controller
             return new EventResource($event);
         }
         
-        return redirect()->route('events.show', $event->id);
+        return redirect('/events/' . $event->id)->with('success', 'Entraste no evento com sucesso!');
     }
 }

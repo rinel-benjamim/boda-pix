@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { Upload, Share2, Settings } from 'lucide-react';
+import { Upload, Share2, Settings, Copy, Link as LinkIcon } from 'lucide-react';
 import { Event, Media, PaginatedMedia } from '@/types/event';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,8 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { QRCodeSVG } from 'qrcode.react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Props {
   event: Event;
@@ -52,6 +54,31 @@ export default function ShowEvent({ event, media }: Props) {
     toast.success('Código copiado!');
   };
 
+  const inviteLink = `${window.location.origin}/events/join?code=${event.access_code}`;
+
+  const copyInviteLink = () => {
+    navigator.clipboard.writeText(inviteLink);
+    toast.success('Link copiado!');
+  };
+
+  const shareEvent = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.name,
+          text: `Junta-te ao evento ${event.name}!`,
+          url: inviteLink,
+        });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          copyInviteLink();
+        }
+      }
+    } else {
+      copyInviteLink();
+    }
+  };
+
   return (
     <AppLayout>
       <Head title={event.name} />
@@ -75,14 +102,48 @@ export default function ShowEvent({ event, media }: Props) {
                   <Share2 className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Código de Acesso</DialogTitle>
+                  <DialogTitle>Convidar Participantes</DialogTitle>
                 </DialogHeader>
-                <div className="flex gap-2">
-                  <Input value={event.access_code} readOnly />
-                  <Button onClick={copyAccessCode}>Copiar</Button>
-                </div>
+                <Tabs defaultValue="qr" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="qr">QR Code</TabsTrigger>
+                    <TabsTrigger value="code">Código</TabsTrigger>
+                    <TabsTrigger value="link">Link</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="qr" className="space-y-4">
+                    <div className="flex justify-center p-4">
+                      <QRCodeSVG value={inviteLink} size={200} level="H" />
+                    </div>
+                    <p className="text-center text-sm text-muted-foreground">
+                      Escaneia este código para entrar no evento
+                    </p>
+                  </TabsContent>
+                  <TabsContent value="code" className="space-y-4">
+                    <div className="flex gap-2">
+                      <Input value={event.access_code} readOnly className="text-center text-2xl font-bold tracking-wider" />
+                      <Button onClick={copyAccessCode} size="icon">
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-center text-sm text-muted-foreground">
+                      Partilha este código para convidar participantes
+                    </p>
+                  </TabsContent>
+                  <TabsContent value="link" className="space-y-4">
+                    <div className="flex gap-2">
+                      <Input value={inviteLink} readOnly className="text-sm" />
+                      <Button onClick={copyInviteLink} size="icon">
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Button onClick={shareEvent} className="w-full">
+                      <LinkIcon className="mr-2 h-4 w-4" />
+                      Partilhar Link
+                    </Button>
+                  </TabsContent>
+                </Tabs>
               </DialogContent>
             </Dialog>
             {event.is_admin && (

@@ -37,7 +37,7 @@ test('web: user can join event with code', function () {
         'access_code' => $event->access_code,
     ]);
     
-    $response->assertRedirect(route('events.show', $event->id));
+    $response->assertRedirect('/events/' . $event->id);
     expect($event->participants()->where('user_id', $joiner->id)->exists())->toBeTrue();
 });
 

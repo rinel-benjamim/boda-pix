@@ -41,8 +41,24 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('events/create');
     })->name('events.create');
     
+    Route::get('/events/join', function () {
+        return Inertia::render('events/join');
+    })->name('events.join');
+    
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
-    Route::post('/events/join', [EventController::class, 'join'])->name('events.join');
+    
+    Route::post('/events/join', function (\Illuminate\Http\Request $request) {
+        $request->validate(['access_code' => 'required|string|size:8']);
+        
+        $eventService = app(\App\Services\EventService::class);
+        $event = $eventService->joinByCode($request->access_code, $request->user());
+        
+        if (!$event) {
+            return back()->withErrors(['access_code' => 'Código inválido ou já és membro']);
+        }
+        
+        return redirect('/events/' . $event->id)->with('success', 'Entraste no evento com sucesso!');
+    })->name('events.join.submit');
     
     Route::post('/events/{event}/media', [\App\Http\Controllers\Api\MediaController::class, 'store'])
         ->where('event', '[0-9]+')

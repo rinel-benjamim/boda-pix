@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Plus, LogIn } from 'lucide-react';
 import { Event } from '@/types/event';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -17,10 +17,16 @@ export default function Events({ events }: Props) {
       <div className="container mx-auto p-4 pb-20 md:pb-4">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Meus Eventos</h1>
-          <Button onClick={() => router.visit('/events/create')}>
-            <Plus className="mr-2 h-4 w-4" />
-            Criar Evento
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => router.visit('/events/join')}>
+              <LogIn className="mr-2 h-4 w-4" />
+              Entrar
+            </Button>
+            <Button onClick={() => router.visit('/events/create')}>
+              <Plus className="mr-2 h-4 w-4" />
+              Criar
+            </Button>
+          </div>
         </div>
 
         {events.length === 0 ? (
