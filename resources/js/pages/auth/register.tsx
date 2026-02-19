@@ -103,17 +103,15 @@ export default function Register() {
                                 Create account
                             </Button>
 
-                            {canInstall && (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={installPWA}
-                                >
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Instalar BodaPix
-                                </Button>
-                            )}
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full"
+                                onClick={installPWA}
+                            >
+                                <Download className="mr-2 h-4 w-4" />
+                                Instalar BodaPix
+                            </Button>
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
