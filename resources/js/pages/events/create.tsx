@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
 
 export default function CreateEvent() {
-  const { data, setData, post, processing, errors } = useForm({
+  const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
     name: '',
     description: '',
     event_date: '',
@@ -18,7 +18,15 @@ export default function CreateEvent() {
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
-    post('/api/events');
+    post('/events', {
+      forceFormData: true,
+      onSuccess: () => {
+        console.log('Event created successfully');
+      },
+      onError: (errors) => {
+        console.error('Error creating event:', errors);
+      },
+    });
   };
 
   return (

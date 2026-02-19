@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\EventController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -19,6 +20,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/events/create', function () {
         return Inertia::render('events/create');
     })->name('events.create');
+    
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::post('/events/join', [EventController::class, 'join'])->name('events.join');
+    
+    Route::post('/events/{event}/media', [\App\Http\Controllers\Api\MediaController::class, 'store'])->name('events.media.store');
 
     Route::get('/events/{event}', function ($id) {
         $event = \App\Models\Event::with(['creator', 'participants'])->findOrFail($id);

@@ -30,7 +30,12 @@ class EventController extends Controller
     public function store(StoreEventRequest $request)
     {
         $event = $this->eventService->create($request->validated(), $request->user());
-        return (new EventResource($event->load('creator')))->response()->setStatusCode(201);
+        
+        if ($request->wantsJson()) {
+            return (new EventResource($event->load('creator')))->response()->setStatusCode(201);
+        }
+        
+        return redirect()->route('events.show', $event->id);
     }
 
     public function show(Event $event)
@@ -59,9 +64,16 @@ class EventController extends Controller
         $event = $this->eventService->joinByCode($request->access_code, $request->user());
         
         if (!$event) {
-            return response()->json(['message' => 'Invalid code or already a member'], 404);
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Invalid code or already a member'], 404);
+            }
+            return back()->withErrors(['access_code' => 'Código inválido ou já és membro']);
         }
 
-        return new EventResource($event);
+        if ($request->wantsJson()) {
+            return new EventResource($event);
+        }
+        
+        return redirect()->route('events.show', $event->id);
     }
 }

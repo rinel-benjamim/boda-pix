@@ -8,10 +8,13 @@ use App\Http\Resources\MediaResource;
 use App\Models\Event;
 use App\Models\Media;
 use App\Services\MediaService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
 class MediaController extends Controller
 {
+    use AuthorizesRequests;
+    
     public function __construct(private MediaService $mediaService) {}
 
     public function index(Request $request, Event $event)
@@ -28,13 +31,19 @@ class MediaController extends Controller
 
     public function store(UploadMediaRequest $request, Event $event)
     {
+        $this->authorize('view', $event);
+        
         $uploadedMedia = [];
 
         foreach ($request->file('files') as $file) {
             $uploadedMedia[] = $this->mediaService->upload($event, $file, $request->user());
         }
 
-        return MediaResource::collection($uploadedMedia);
+        if ($request->wantsJson()) {
+            return MediaResource::collection($uploadedMedia);
+        }
+        
+        return back();
     }
 
     public function destroy(Media $media)

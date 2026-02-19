@@ -25,14 +25,18 @@ export default function ShowEvent({ event, media }: Props) {
     Array.from(files).forEach((file) => formData.append('files[]', file));
 
     try {
-      await fetch(`/api/events/${event.id}/media`, {
+      await fetch(`/events/${event.id}/media`, {
         method: 'POST',
         body: formData,
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' },
+        headers: { 
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json'
+        },
       });
       toast.success('Upload concluído!');
       router.reload();
-    } catch {
+    } catch (error) {
+      console.error('Upload error:', error);
       toast.error('Erro no upload');
     } finally {
       setUploading(false);
