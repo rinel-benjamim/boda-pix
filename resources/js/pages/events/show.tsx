@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
-import { Upload, Share2, Settings, Copy, Link as LinkIcon } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Upload, Share2, Settings, Copy, Link as LinkIcon, Download } from 'lucide-react';
 import { Event, Media, PaginatedMedia } from '@/types/event';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import html2canvas from 'html2canvas';
 
 interface Props {
   event: Event;
@@ -18,6 +19,7 @@ interface Props {
 
 export default function ShowEvent({ event, media }: Props) {
   const [uploading, setUploading] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const handleUpload = (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -79,6 +81,26 @@ export default function ShowEvent({ event, media }: Props) {
     }
   };
 
+  const downloadQRCode = async () => {
+    if (!qrRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(qrRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `${event.name}-qrcode.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      toast.success('QR Code baixado!');
+    } catch (error) {
+      toast.error('Erro ao baixar QR Code');
+    }
+  };
+
   return (
     <AppLayout>
       <Head title={event.name} />
@@ -113,12 +135,17 @@ export default function ShowEvent({ event, media }: Props) {
                     <TabsTrigger value="link">Link</TabsTrigger>
                   </TabsList>
                   <TabsContent value="qr" className="space-y-4">
-                    <div className="flex justify-center p-4">
+                    <div ref={qrRef} className="flex flex-col items-center justify-center bg-white p-6 rounded-lg">
                       <QRCodeSVG value={inviteLink} size={200} level="H" />
+                      <p className="mt-4 text-sm font-medium text-gray-900">{event.name}</p>
                     </div>
                     <p className="text-center text-sm text-muted-foreground">
                       Escaneia este código para entrar no evento
                     </p>
+                    <Button onClick={downloadQRCode} className="w-full" variant="outline">
+                      <Download className="mr-2 h-4 w-4" />
+                      Baixar QR Code
+                    </Button>
                   </TabsContent>
                   <TabsContent value="code" className="space-y-4">
                     <div className="flex gap-2">

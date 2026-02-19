@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
-import { QrCode, Hash, Link as LinkIcon } from 'lucide-react';
+import { QrCode, Hash } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -9,11 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import InputError from '@/components/input-error';
 import { toast } from 'sonner';
+import { QRScanner } from '@/components/qr-scanner';
 
 export default function JoinEvent() {
   const { data, setData, post, processing, errors } = useForm({
     access_code: '',
   });
+  const [showScanner, setShowScanner] = useState(false);
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
@@ -27,13 +29,41 @@ export default function JoinEvent() {
     });
   };
 
-  const handleScan = () => {
-    toast.info('Scanner QR em desenvolvimento');
+  const handleScan = (scannedData: string) => {
+    setShowScanner(false);
+    
+    try {
+      const url = new URL(scannedData);
+      const code = url.searchParams.get('code');
+      
+      if (code) {
+        setData('access_code', code);
+        post('/events/join', {
+          onSuccess: () => {
+            toast.success('Entraste no evento com sucesso!');
+          },
+          onError: () => {
+            toast.error('Código inválido ou já és membro');
+          },
+        });
+      } else {
+        toast.error('QR Code inválido');
+      }
+    } catch {
+      toast.error('QR Code inválido');
+    }
   };
 
   return (
     <AppLayout>
       <Head title="Entrar em Evento" />
+      
+      {showScanner && (
+        <QRScanner
+          onScan={handleScan}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
       
       <div className="container mx-auto max-w-2xl p-4 pb-20 md:pb-4">
         <h1 className="mb-6 text-2xl font-bold">Entrar em Evento</h1>
@@ -79,7 +109,7 @@ export default function JoinEvent() {
                 <p className="text-center text-muted-foreground">
                   Escaneia o código QR do evento para entrares automaticamente
                 </p>
-                <Button onClick={handleScan} size="lg">
+                <Button onClick={() => setShowScanner(true)} size="lg">
                   <QrCode className="mr-2 h-5 w-5" />
                   Escanear QR Code
                 </Button>
