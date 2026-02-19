@@ -17,8 +17,24 @@ Route::get('/pwa-debug', function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/events', function () {
-        $events = auth()->user()->events()->with(['creator', 'participants', 'media'])->latest()->get();
-        return Inertia::render('events/index', ['events' => $events]);
+        $events = auth()->user()->events()->with(['creator'])->withCount(['participants', 'media'])->latest()->get();
+        
+        $eventsData = $events->map(function ($event) {
+            return [
+                'id' => $event->id,
+                'name' => $event->name,
+                'description' => $event->description,
+                'cover_image' => $event->cover_image ? \Storage::disk('s3')->temporaryUrl($event->cover_image, now()->addHours(24)) : null,
+                'event_date' => $event->event_date->format('Y-m-d'),
+                'access_code' => $event->access_code,
+                'is_private' => $event->is_private,
+                'participants_count' => $event->participants_count,
+                'media_count' => $event->media_count,
+                'created_at' => $event->created_at->toISOString(),
+            ];
+        });
+        
+        return Inertia::render('events/index', ['events' => $eventsData]);
     })->name('events.index');
 
     Route::get('/events/create', function () {
@@ -43,7 +59,7 @@ Route::middleware(['auth'])->group(function () {
                 'id' => $event->id,
                 'name' => $event->name,
                 'description' => $event->description,
-                'cover_image' => $event->cover_image ? \Storage::disk('s3')->url($event->cover_image) : null,
+                'cover_image' => $event->cover_image ? \Storage::disk('s3')->temporaryUrl($event->cover_image, now()->addHours(24)) : null,
                 'event_date' => $event->event_date->format('Y-m-d'),
                 'access_code' => $event->access_code,
                 'is_private' => $event->is_private,

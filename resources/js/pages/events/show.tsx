@@ -17,14 +17,10 @@ interface Props {
 export default function ShowEvent({ event, media }: Props) {
   const [uploading, setUploading] = useState(false);
 
-  const handleUpload = async (files: FileList | null) => {
+  const handleUpload = (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
-    console.log('Event ID:', event.id);
-    console.log('Upload URL:', `/events/${event.id}/media`);
-
-    // Validar tamanho dos arquivos
-    const maxSize = 20 * 1024 * 1024; // 20MB
+    const maxSize = 20 * 1024 * 1024;
     for (const file of Array.from(files)) {
       if (file.size > maxSize) {
         toast.error(`Ficheiro "${file.name}" é muito grande. Máximo: 20MB`);
@@ -33,38 +29,22 @@ export default function ShowEvent({ event, media }: Props) {
     }
 
     setUploading(true);
-    const formData = new FormData();
-    Array.from(files).forEach((file) => formData.append('files[]', file));
-
-    try {
-      const url = `/events/${event.id}/media`;
-      console.log('Sending POST to:', url);
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        body: formData,
-        headers: { 
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-          'Accept': 'application/json'
+    
+    router.post(`/events/${event.id}/media`, 
+      { files: Array.from(files) },
+      {
+        forceFormData: true,
+        onSuccess: () => {
+          toast.success(`${files.length} ficheiro(s) carregado(s) com sucesso!`);
+          setUploading(false);
         },
-      });
-      
-      console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        console.error('Response error:', data);
-        throw new Error(data.message || 'Erro no upload');
+        onError: (errors) => {
+          console.error('Upload error:', errors);
+          toast.error('Erro no upload');
+          setUploading(false);
+        },
       }
-      
-      toast.success(`${files.length} ficheiro(s) carregado(s) com sucesso!`);
-      router.reload();
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro no upload');
-    } finally {
-      setUploading(false);
-    }
+    );
   };
 
   const copyAccessCode = () => {
