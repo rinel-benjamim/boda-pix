@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Home, Calendar, User } from 'lucide-react';
+import { Home, Calendar, LogIn, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function BottomNav() {
@@ -11,7 +11,7 @@ export function BottomNav() {
         <Link
           href="/events"
           className={cn(
-            'flex flex-col items-center gap-1 px-4 py-2 text-xs transition-colors',
+            'flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors',
             isActive('/events') ? 'text-primary' : 'text-muted-foreground'
           )}
         >
@@ -22,7 +22,7 @@ export function BottomNav() {
         <Link
           href="/events/create"
           className={cn(
-            'flex flex-col items-center gap-1 px-4 py-2 text-xs transition-colors',
+            'flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors',
             isActive('/events/create') ? 'text-primary' : 'text-muted-foreground'
           )}
         >
@@ -31,9 +31,20 @@ export function BottomNav() {
         </Link>
         
         <Link
+          href="/events/join"
+          className={cn(
+            'flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors',
+            isActive('/events/join') ? 'text-primary' : 'text-muted-foreground'
+          )}
+        >
+          <LogIn className="h-5 w-5" />
+          <span>Entrar</span>
+        </Link>
+        
+        <Link
           href="/settings/profile"
           className={cn(
-            'flex flex-col items-center gap-1 px-4 py-2 text-xs transition-colors',
+            'flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors',
             isActive('/settings/profile') ? 'text-primary' : 'text-muted-foreground'
           )}
         >

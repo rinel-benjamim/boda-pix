@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Calendar, Home } from 'lucide-react';
+import { Calendar, Home, LogIn } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -25,6 +25,11 @@ const mainNavItems: NavItem[] = [
         title: 'Criar Evento',
         href: '/events/create',
         icon: Calendar,
+    },
+    {
+        title: 'Entrar em Evento',
+        href: '/events/join',
+        icon: LogIn,
     },
 ];
 

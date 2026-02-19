@@ -30,11 +30,20 @@ Route::middleware(['auth'])->group(function () {
                 'is_private' => $event->is_private,
                 'participants_count' => $event->participants_count,
                 'media_count' => $event->media_count,
+                'created_by' => [
+                    'id' => $event->creator->id,
+                    'name' => $event->creator->name,
+                ],
                 'created_at' => $event->created_at->toISOString(),
             ];
         });
         
-        return Inertia::render('events/index', ['events' => $eventsData]);
+        return Inertia::render('events/index', [
+            'events' => $eventsData,
+            'user' => [
+                'id' => auth()->id(),
+            ],
+        ]);
     })->name('events.index');
 
     Route::get('/events/create', function () {
