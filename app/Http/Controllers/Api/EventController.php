@@ -18,7 +18,11 @@ class EventController extends Controller
     {
         $events = Event::whereHas('participants', function ($query) use ($request) {
             $query->where('user_id', $request->user()->id);
-        })->with(['creator', 'participants', 'media'])->latest()->get();
+        })
+        ->with('creator')
+        ->withCount(['participants', 'media'])
+        ->latest()
+        ->get();
 
         return EventResource::collection($events);
     }
@@ -26,7 +30,7 @@ class EventController extends Controller
     public function store(StoreEventRequest $request)
     {
         $event = $this->eventService->create($request->validated(), $request->user());
-        return new EventResource($event);
+        return (new EventResource($event->load('creator')))->response()->setStatusCode(201);
     }
 
     public function show(Event $event)

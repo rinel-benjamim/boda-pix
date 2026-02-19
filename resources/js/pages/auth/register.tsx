@@ -12,7 +12,7 @@ import { store } from '@/routes/register';
 import { usePWA } from '@/hooks/use-pwa';
 
 export default function Register() {
-    const { canInstall, installPWA } = usePWA();
+    const { installPWA } = usePWA();
 
     return (
         <AuthLayout

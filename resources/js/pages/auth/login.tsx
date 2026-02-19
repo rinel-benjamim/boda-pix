@@ -24,7 +24,7 @@ export default function Login({
     canResetPassword,
     canRegister,
 }: Props) {
-    const { canInstall, installPWA } = usePWA();
+    const { installPWA } = usePWA();
 
     return (
         <AuthLayout

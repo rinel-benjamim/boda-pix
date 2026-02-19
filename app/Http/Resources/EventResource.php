@@ -23,8 +23,8 @@ class EventResource extends JsonResource
                 'id' => $this->creator->id,
                 'name' => $this->creator->name,
             ],
-            'participants_count' => $this->participants()->count(),
-            'media_count' => $this->media()->count(),
+            'participants_count' => $this->participants_count ?? $this->participants()->count(),
+            'media_count' => $this->media_count ?? $this->media()->count(),
             'created_at' => $this->created_at->toISOString(),
         ];
     }
