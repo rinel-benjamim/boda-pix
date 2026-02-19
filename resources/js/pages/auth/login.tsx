@@ -1,5 +1,4 @@
 import { Form, Head } from '@inertiajs/react';
-import { Download } from 'lucide-react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import AuthLayout from '@/layouts/auth-layout';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
-import { usePWA } from '@/hooks/use-pwa';
+import { InstallPWAButton } from '@/components/install-pwa-button';
 
 type Props = {
     status?: string;
@@ -24,7 +23,6 @@ export default function Login({
     canResetPassword,
     canRegister,
 }: Props) {
-    const { installPWA } = usePWA();
 
     return (
         <AuthLayout
@@ -101,15 +99,7 @@ export default function Login({
                                 Log in
                             </Button>
 
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full"
-                                onClick={installPWA}
-                            >
-                                <Download className="mr-2 h-4 w-4" />
-                                Instalar BodaPix
-                            </Button>
+                            <InstallPWAButton />
                         </div>
 
                         {canRegister && (

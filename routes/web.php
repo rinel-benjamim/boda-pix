@@ -11,6 +11,10 @@ Route::get('/', function () {
     return redirect('/login');
 })->name('home');
 
+Route::get('/pwa-debug', function () {
+    return view('pwa-debug');
+})->name('pwa.debug');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/events', function () {
         $events = auth()->user()->events()->with(['creator', 'participants', 'media'])->latest()->get();
@@ -24,7 +28,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::post('/events/join', [EventController::class, 'join'])->name('events.join');
     
-    Route::post('/events/{event}/media', [\App\Http\Controllers\Api\MediaController::class, 'store'])->name('events.media.store');
+    Route::post('/events/{event}/media', [\App\Http\Controllers\Api\MediaController::class, 'store'])
+        ->where('event', '[0-9]+')
+        ->name('events.media.store');
 
     Route::get('/events/{event}', function ($id) {
         $event = \App\Models\Event::with(['creator', 'participants'])->findOrFail($id);
@@ -33,7 +39,23 @@ Route::middleware(['auth'])->group(function () {
         $media = $event->media()->with('user')->latest()->paginate(20);
         
         return Inertia::render('events/show', [
-            'event' => new \App\Http\Resources\EventResource($event),
+            'event' => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'description' => $event->description,
+                'cover_image' => $event->cover_image ? \Storage::disk('s3')->url($event->cover_image) : null,
+                'event_date' => $event->event_date->format('Y-m-d'),
+                'access_code' => $event->access_code,
+                'is_private' => $event->is_private,
+                'is_admin' => $event->isAdmin(auth()->user()),
+                'created_by' => [
+                    'id' => $event->creator->id,
+                    'name' => $event->creator->name,
+                ],
+                'participants_count' => $event->participants()->count(),
+                'media_count' => $event->media()->count(),
+                'created_at' => $event->created_at->toISOString(),
+            ],
             'media' => \App\Http\Resources\MediaResource::collection($media)->response()->getData(true)
         ]);
     })->name('events.show');

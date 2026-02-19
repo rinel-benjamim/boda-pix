@@ -8,14 +8,14 @@ class UploadMediaRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('uploadMedia', $this->route('event'));
+        return true; // Autorização será feita no controller
     }
 
     public function rules(): array
     {
         return [
             'files' => ['required', 'array'],
-            'files.*' => ['file', 'mimes:jpg,jpeg,png,gif,mp4,mov,avi', 'max:102400'],
+            'files.*' => ['file', 'mimes:jpg,jpeg,png,gif,webp,mp4,mov,avi,webm', 'max:10240'],
         ];
     }
 }

@@ -29,8 +29,16 @@ class MediaController extends Controller
         return MediaResource::collection($media);
     }
 
-    public function store(UploadMediaRequest $request, Event $event)
+    public function store(UploadMediaRequest $request, $eventId)
     {
+        $event = Event::findOrFail($eventId);
+        
+        \Log::info('MediaController store called', [
+            'event_id' => $event->id,
+            'user_id' => $request->user()->id,
+            'files_count' => count($request->file('files'))
+        ]);
+        
         $this->authorize('view', $event);
         
         $uploadedMedia = [];

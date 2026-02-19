@@ -1,11 +1,12 @@
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
+import { toast } from 'sonner';
 
 export default function CreateEvent() {
   const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
@@ -21,10 +22,11 @@ export default function CreateEvent() {
     post('/events', {
       forceFormData: true,
       onSuccess: () => {
-        console.log('Event created successfully');
+        toast.success('Evento criado com sucesso!');
       },
       onError: (errors) => {
         console.error('Error creating event:', errors);
+        toast.error('Erro ao criar evento');
       },
     });
   };
@@ -73,12 +75,22 @@ export default function CreateEvent() {
             </div>
 
             <div>
-              <Label htmlFor="cover_image">Imagem de Capa</Label>
+              <Label htmlFor="cover_image">Imagem de Capa (opcional, máx 10MB)</Label>
               <Input
                 id="cover_image"
                 type="file"
                 accept="image/*"
-                onChange={(e) => setData('cover_image', e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    if (file.size > 10 * 1024 * 1024) {
+                      toast.error('Imagem muito grande. Máximo: 10MB');
+                      e.target.value = '';
+                      return;
+                    }
+                    setData('cover_image', file);
+                  }
+                }}
               />
               <InputError message={errors.cover_image} />
             </div>

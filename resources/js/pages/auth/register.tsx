@@ -1,5 +1,4 @@
 import { Form, Head } from '@inertiajs/react';
-import { Download } from 'lucide-react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -9,10 +8,9 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import { usePWA } from '@/hooks/use-pwa';
+import { InstallPWAButton } from '@/components/install-pwa-button';
 
 export default function Register() {
-    const { installPWA } = usePWA();
 
     return (
         <AuthLayout
@@ -103,15 +101,7 @@ export default function Register() {
                                 Create account
                             </Button>
 
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full"
-                                onClick={installPWA}
-                            >
-                                <Download className="mr-2 h-4 w-4" />
-                                Instalar BodaPix
-                            </Button>
+                            <InstallPWAButton />
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">

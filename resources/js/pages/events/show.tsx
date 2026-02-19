@@ -20,12 +20,27 @@ export default function ShowEvent({ event, media }: Props) {
   const handleUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
+    console.log('Event ID:', event.id);
+    console.log('Upload URL:', `/events/${event.id}/media`);
+
+    // Validar tamanho dos arquivos
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    for (const file of Array.from(files)) {
+      if (file.size > maxSize) {
+        toast.error(`Ficheiro "${file.name}" é muito grande. Máximo: 20MB`);
+        return;
+      }
+    }
+
     setUploading(true);
     const formData = new FormData();
     Array.from(files).forEach((file) => formData.append('files[]', file));
 
     try {
-      await fetch(`/events/${event.id}/media`, {
+      const url = `/events/${event.id}/media`;
+      console.log('Sending POST to:', url);
+      
+      const response = await fetch(url, {
         method: 'POST',
         body: formData,
         headers: { 
@@ -33,11 +48,20 @@ export default function ShowEvent({ event, media }: Props) {
           'Accept': 'application/json'
         },
       });
-      toast.success('Upload concluído!');
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        console.error('Response error:', data);
+        throw new Error(data.message || 'Erro no upload');
+      }
+      
+      toast.success(`${files.length} ficheiro(s) carregado(s) com sucesso!`);
       router.reload();
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Erro no upload');
+      toast.error(error instanceof Error ? error.message : 'Erro no upload');
     } finally {
       setUploading(false);
     }
