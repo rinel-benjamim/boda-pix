@@ -1,5 +1,5 @@
-import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
+import { Head, useForm, router } from '@inertiajs/react';
+import { FormEventHandler, useState, useEffect } from 'react';
 import { QrCode, Hash } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,29 @@ export default function JoinEvent() {
   });
   const [showScanner, setShowScanner] = useState(false);
 
+  // Processar código da URL (link compartilhado)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code && code.length === 8) {
+      const upperCode = code.toUpperCase();
+      setData('access_code', upperCode);
+      
+      // Auto-submit após um pequeno delay para garantir que o form está pronto
+      setTimeout(() => {
+        post('/events/join', {
+          onSuccess: () => {
+            toast.success('Entraste no evento com sucesso!');
+          },
+          onError: () => {
+            toast.error('Código inválido ou já és membro');
+          },
+        });
+      }, 100);
+    }
+  }, []);
+
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
     post('/events/join', {
@@ -32,12 +55,27 @@ export default function JoinEvent() {
   const handleScan = (scannedData: string) => {
     setShowScanner(false);
     
+    let codeToSubmit = '';
+    
     try {
       const url = new URL(scannedData);
       const code = url.searchParams.get('code');
       
-      if (code) {
-        setData('access_code', code);
+      if (code && code.length === 8) {
+        codeToSubmit = code.toUpperCase();
+      }
+    } catch {
+      // Se não for URL, tentar usar como código direto
+      if (scannedData.length === 8) {
+        codeToSubmit = scannedData.toUpperCase();
+      }
+    }
+    
+    if (codeToSubmit) {
+      setData('access_code', codeToSubmit);
+      
+      // Submeter após atualizar o estado
+      setTimeout(() => {
         post('/events/join', {
           onSuccess: () => {
             toast.success('Entraste no evento com sucesso!');
@@ -46,10 +84,8 @@ export default function JoinEvent() {
             toast.error('Código inválido ou já és membro');
           },
         });
-      } else {
-        toast.error('QR Code inválido');
-      }
-    } catch {
+      }, 100);
+    } else {
       toast.error('QR Code inválido');
     }
   };
