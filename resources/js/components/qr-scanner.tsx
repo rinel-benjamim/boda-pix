@@ -26,7 +26,14 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
           return;
         }
 
-        const selectedDeviceId = videoInputDevices[0].deviceId;
+        // Procurar câmera traseira (environment) ou usar a última disponível
+        const backCamera = videoInputDevices.find(device => 
+          device.label.toLowerCase().includes('back') || 
+          device.label.toLowerCase().includes('rear') ||
+          device.label.toLowerCase().includes('environment')
+        );
+        
+        const selectedDeviceId = backCamera?.deviceId || videoInputDevices[videoInputDevices.length - 1].deviceId;
 
         await reader.decodeFromVideoDevice(
           selectedDeviceId,
