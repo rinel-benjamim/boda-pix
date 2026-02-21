@@ -37,7 +37,14 @@ export function InstallPWAButton() {
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      // Se não houver prompt, mostrar instruções
+      alert('Para instalar o BodaPix:\n\n' +
+        'Chrome/Edge: Menu (⋮) → Instalar aplicativo\n' +
+        'Safari (iOS): Partilhar → Adicionar ao ecrã principal\n' +
+        'Firefox: Menu (⋮) → Instalar');
+      return;
+    }
     
     setIsInstalling(true);
     
@@ -57,9 +64,19 @@ export function InstallPWAButton() {
     }
   };
 
-  // Don't show button if already installed or prompt not available
-  if (isInstalled || !deferredPrompt) {
-    return null;
+  // Mostrar sempre, exceto se já instalado
+  if (isInstalled) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        disabled
+      >
+        <Download className="mr-2 h-4 w-4" />
+        BodaPix Instalado
+      </Button>
+    );
   }
 
   return (
@@ -71,7 +88,7 @@ export function InstallPWAButton() {
       disabled={isInstalling}
     >
       <Download className="mr-2 h-4 w-4" />
-      {isInstalling ? 'A instalar...' : 'Instalar BodaPix'}
+      {isInstalling ? 'A instalar...' : 'Baixar BodaPix'}
     </Button>
   );
 }
