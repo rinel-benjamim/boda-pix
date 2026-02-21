@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import html2canvas from 'html2canvas';
 
 interface Props {
   event: Event;
@@ -82,21 +81,70 @@ export default function ShowEvent({ event, media }: Props) {
   };
 
   const downloadQRCode = async () => {
-    if (!qrRef.current) return;
+    if (!qrRef.current) {
+      toast.error('Erro ao baixar QR Code');
+      return;
+    }
     
     try {
-      const canvas = await html2canvas(qrRef.current, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-      });
-      
-      const link = document.createElement('a');
-      link.download = `${event.name}-qrcode.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      
-      toast.success('QR Code baixado!');
+      // Encontrar o SVG dentro do ref
+      const svg = qrRef.current.querySelector('svg');
+      if (!svg) {
+        toast.error('QR Code não encontrado');
+        return;
+      }
+
+      // Criar canvas e desenhar o SVG
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        toast.error('Erro ao criar canvas');
+        return;
+      }
+
+      // Definir tamanho do canvas
+      const size = 400;
+      canvas.width = size;
+      canvas.height = size + 60; // Extra para o texto
+
+      // Fundo branco
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Converter SVG para imagem
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      const img = new Image();
+      img.onload = () => {
+        // Desenhar QR code
+        ctx.drawImage(img, 0, 0, size, size);
+
+        // Adicionar texto
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(event.name, size / 2, size + 35);
+
+        // Download
+        const link = document.createElement('a');
+        link.download = `${event.name}-qrcode.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        URL.revokeObjectURL(url);
+        toast.success('QR Code baixado!');
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        toast.error('Erro ao processar QR Code');
+      };
+
+      img.src = url;
     } catch (error) {
+      console.error('Download error:', error);
       toast.error('Erro ao baixar QR Code');
     }
   };
