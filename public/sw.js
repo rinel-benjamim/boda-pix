@@ -20,10 +20,19 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Não cachear requisições POST, PUT, DELETE
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clone the response
+        // Só cachear respostas válidas
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+
         const responseToCache = response.clone();
         
         caches.open(CACHE_NAME)
