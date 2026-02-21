@@ -26,17 +26,18 @@ export default function JoinEvent() {
       const upperCode = code.toUpperCase();
       setData('access_code', upperCode);
       
-      // Auto-submit após um pequeno delay para garantir que o form está pronto
-      setTimeout(() => {
-        post('/events/join', {
+      // Submeter diretamente com o código
+      router.post('/events/join',
+        { access_code: upperCode },
+        {
           onSuccess: () => {
             toast.success('Entraste no evento com sucesso!');
           },
           onError: () => {
             toast.error('Código inválido ou já és membro');
           },
-        });
-      }, 100);
+        }
+      );
     }
   }, []);
 
@@ -72,19 +73,21 @@ export default function JoinEvent() {
     }
     
     if (codeToSubmit) {
+      // Atualizar visualmente o campo
       setData('access_code', codeToSubmit);
       
-      // Submeter após atualizar o estado
-      setTimeout(() => {
-        post('/events/join', {
+      // Submeter diretamente com o código
+      router.post('/events/join', 
+        { access_code: codeToSubmit },
+        {
           onSuccess: () => {
             toast.success('Entraste no evento com sucesso!');
           },
           onError: () => {
             toast.error('Código inválido ou já és membro');
           },
-        });
-      }, 100);
+        }
+      );
     } else {
       toast.error('QR Code inválido');
     }
